@@ -1,8 +1,13 @@
 import os
 import shutil
 import time
+
 from src import config
-from src.metrics import FILES_SORTED_TOTAL, FILE_PROCESSING_SECONDS, UNMATCHED_FILES_TOTAL
+from src.metrics import (
+    FILE_PROCESSING_SECONDS,
+    FILES_SORTED_TOTAL,
+    UNMATCHED_FILES_TOTAL,
+)
 
 TEMP_EXTENSIONS = [".crdownload", ".tmp", ".part", ".download"]
 
@@ -36,7 +41,6 @@ def process_file(file_path: str):
     FILE_PROCESSING_SECONDS.observe(duration)
 
 def move_file(src: str, dst: str, category: str):
-    # Access config.DRY_RUN dynamically
     if config.DRY_RUN:
         print(f"[DRY-RUN] Would move: {src} -> {dst}")
         FILES_SORTED_TOTAL.labels(category=category, status="success").inc()
@@ -47,6 +51,6 @@ def move_file(src: str, dst: str, category: str):
         shutil.move(src, dst)
         print(f"[MOVED] {src} -> {dst}")
         FILES_SORTED_TOTAL.labels(category=category, status="success").inc()
-    except Exception as e:
+    except OSError as e:
         print(f"[ERROR] Failed to move {src}: {e}")
         FILES_SORTED_TOTAL.labels(category=category, status="failed").inc()

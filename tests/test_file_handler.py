@@ -1,6 +1,6 @@
-import pytest
-from src.file_handler import is_temp_file, process_file
 from src import config
+from src.file_handler import is_temp_file, process_file
+
 
 def test_is_temp_file():
     assert is_temp_file("document.pdf.crdownload") is True
@@ -14,7 +14,6 @@ def test_tag_matching(tmp_path, monkeypatch):
     downloads.mkdir()
     sem3_docs.mkdir(parents=True)
 
-    # Patch attributes on the config module directly
     monkeypatch.setattr(config, "TAG_RULES", {"sem3_": str(sem3_docs)})
     monkeypatch.setattr(config, "DRY_RUN", False)
 
