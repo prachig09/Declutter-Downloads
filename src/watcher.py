@@ -1,9 +1,12 @@
 import time
-from watchdog.observers.polling import PollingObserver
+
 from watchdog.events import FileSystemEventHandler
-from src.config import WATCH_DIR, DRY_RUN
+from watchdog.observers.polling import PollingObserver
+
+from src.config import DRY_RUN, WATCH_DIR
 from src.file_handler import process_file
 from src.metrics import start_metrics_server
+
 
 class DownloadHandler(FileSystemEventHandler):
     def on_created(self, event):

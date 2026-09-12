@@ -1,4 +1,4 @@
-from prometheus_client import start_http_server, Counter, Histogram
+from prometheus_client import Counter, Histogram, start_http_server
 
 # Metric Definitions
 FILES_SORTED_TOTAL = Counter(
