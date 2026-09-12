@@ -3,6 +3,7 @@ from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from src.config import WATCH_DIR, DRY_RUN
 from src.file_handler import process_file
+from src.metrics import start_metrics_server
 
 class DownloadHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -10,6 +11,9 @@ class DownloadHandler(FileSystemEventHandler):
             process_file(event.src_path)
 
 if __name__ == "__main__":
+    # Launch Prometheus HTTP Metrics Server on localhost:8000
+    start_metrics_server(8000)
+
     print(f"File Sorter Active! Watching: {WATCH_DIR} (Dry Run: {DRY_RUN})")
     
     event_handler = DownloadHandler()

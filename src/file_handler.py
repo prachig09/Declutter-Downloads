@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 from src.config import TAG_RULES, DRY_RUN
+from src.metrics import FILES_SORTED_TOTAL, FILE_PROCESSING_SECONDS, UNMATCHED_FILES_TOTAL
 
 TEMP_EXTENSIONS = [".crdownload", ".tmp", ".part", ".download"]
 
@@ -14,21 +15,38 @@ def process_file(file_path: str):
     if is_temp_file(filename) or os.path.isdir(file_path):
         return
 
-    # Give browser write-lock a brief pause to release
-    time.sleep(0.5)
+    # Start timing the operation
+    start_time = time.time()
+    matched = False
 
-    # Tag Matching Engine
+    time.sleep(0.5)  # Pause for write-lock release
+
     for tag, destination_folder in TAG_RULES.items():
         if tag in filename:
+            matched = True
+            category_name = tag.strip("_")
             destination_path = os.path.join(destination_folder, filename)
-            move_file(file_path, destination_path)
-            return
+            move_file(file_path, destination_path, category_name)
+            break
 
-def move_file(src: str, dst: str):
+    if not matched:
+        UNMATCHED_FILES_TOTAL.inc()
+
+    # Record total duration into Histogram
+    duration = time.time() - start_time
+    FILE_PROCESSING_SECONDS.observe(duration)
+
+def move_file(src: str, dst: str, category: str):
     if DRY_RUN:
         print(f"[DRY-RUN] Would move: {src} -> {dst}")
+        FILES_SORTED_TOTAL.labels(category=category, status="success").inc()
         return
 
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
-    shutil.move(src, dst)
-    print(f"[MOVED] {src} -> {dst}")
+    try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.move(src, dst)
+        print(f"[MOVED] {src} -> {dst}")
+        FILES_SORTED_TOTAL.labels(category=category, status="success").inc()
+    except Exception as e:
+        print(f"[ERROR] Failed to move {src}: {e}")
+        FILES_SORTED_TOTAL.labels(category=category, status="failed").inc()
