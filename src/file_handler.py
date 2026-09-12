@@ -1,7 +1,7 @@
 import os
 import shutil
 import time
-from src.config import TAG_RULES, DRY_RUN
+from src import config
 from src.metrics import FILES_SORTED_TOTAL, FILE_PROCESSING_SECONDS, UNMATCHED_FILES_TOTAL
 
 TEMP_EXTENSIONS = [".crdownload", ".tmp", ".part", ".download"]
@@ -15,13 +15,13 @@ def process_file(file_path: str):
     if is_temp_file(filename) or os.path.isdir(file_path):
         return
 
-    # Start timing the operation
     start_time = time.time()
     matched = False
 
-    time.sleep(0.5)  # Pause for write-lock release
+    time.sleep(0.5)
 
-    for tag, destination_folder in TAG_RULES.items():
+    # Access config.TAG_RULES dynamically
+    for tag, destination_folder in config.TAG_RULES.items():
         if tag in filename:
             matched = True
             category_name = tag.strip("_")
@@ -32,12 +32,12 @@ def process_file(file_path: str):
     if not matched:
         UNMATCHED_FILES_TOTAL.inc()
 
-    # Record total duration into Histogram
     duration = time.time() - start_time
     FILE_PROCESSING_SECONDS.observe(duration)
 
 def move_file(src: str, dst: str, category: str):
-    if DRY_RUN:
+    # Access config.DRY_RUN dynamically
+    if config.DRY_RUN:
         print(f"[DRY-RUN] Would move: {src} -> {dst}")
         FILES_SORTED_TOTAL.labels(category=category, status="success").inc()
         return
