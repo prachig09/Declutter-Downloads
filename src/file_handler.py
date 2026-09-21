@@ -12,7 +12,8 @@ from src.metrics import (
 TEMP_EXTENSIONS = [".crdownload", ".tmp", ".part", ".download"]
 
 def is_temp_file(filename: str) -> bool:
-    return any(filename.lower().endswith(ext) for ext in TEMP_EXTENSIONS) or filename.startswith(".")
+    is_temp_ext = any(filename.lower().endswith(ext) for ext in TEMP_EXTENSIONS)
+    return is_temp_ext or filename.startswith(".")
 
 def process_file(file_path: str):
     filename = os.path.basename(file_path)

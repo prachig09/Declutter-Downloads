@@ -18,7 +18,7 @@ if __name__ == "__main__":
     start_metrics_server(8000)
 
     print(f"File Sorter Active! Watching: {WATCH_DIR} (Dry Run: {DRY_RUN})")
-    
+
     event_handler = DownloadHandler()
     observer = PollingObserver(timeout=1.0)
     observer.schedule(event_handler, path=WATCH_DIR, recursive=False)
